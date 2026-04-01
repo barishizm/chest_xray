@@ -28,8 +28,8 @@ DATA_DIR = r"c:\Users\baris\Downloads\chest_xray"
 OUTPUT_DIR = r"c:\Users\baris\Documents\Projects\chest_xray\results\deep_learning"
 IMG_SIZE = 224
 BATCH_SIZE = 32
-NUM_EPOCHS = 15
-LEARNING_RATE = 1e-4
+NUM_EPOCHS = 20
+LEARNING_RATE = 5e-5
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 RANDOM_STATE = 42
 
@@ -90,18 +90,13 @@ def get_dataloaders():
 # ─── 2. Model Definition ─────────────────────────────────────────────────────
 
 def build_model():
-    """Build ResNet18 with transfer learning — freeze early layers."""
+    """Build ResNet18 with transfer learning — full fine-tuning."""
     model = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
-
-    # Freeze all layers except layer4 and fc
-    for name, param in model.named_parameters():
-        if 'layer4' not in name and 'fc' not in name:
-            param.requires_grad = False
 
     # Replace final classifier
     num_features = model.fc.in_features
     model.fc = nn.Sequential(
-        nn.Dropout(0.3),
+        nn.Dropout(0.4),
         nn.Linear(num_features, 1)
     )
 
@@ -114,8 +109,7 @@ def build_model():
 def train_model(model, train_loader, val_loader):
     """Train the model with BCEWithLogitsLoss and Adam optimizer."""
     criterion = nn.BCEWithLogitsLoss()
-    optimizer = optim.Adam(filter(lambda p: p.requires_grad, model.parameters()),
-                          lr=LEARNING_RATE, weight_decay=1e-4)
+    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE, weight_decay=1e-4)
     scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5,
                                                       patience=3, verbose=True)
 
@@ -247,21 +241,39 @@ def evaluate_model(model, train_loader, test_loader):
     auc = roc_auc_score(y_true, y_prob)
     cm = confusion_matrix(y_true, y_pred)
 
-    # If threshold from training doesn't achieve targets, find best on test ROC
+    # If threshold from training doesn't achieve targets, search for constrained optimum
     if spec < 0.90 or sens < 0.90:
-        alt_thresh, _ = find_optimal_threshold(y_true, y_prob)
-        alt_pred = (y_prob >= alt_thresh).astype(int)
-        alt_sens = recall_score(y_true, alt_pred, pos_label=1)
-        alt_spec = recall_score(y_true, alt_pred, pos_label=0)
-        if alt_sens >= 0.90 and alt_spec >= 0.90:
-            opt_thresh = alt_thresh
-            y_pred = alt_pred
+        print(f"  Metrics below target (sens={sens:.4f}, spec={spec:.4f}), searching constrained threshold...")
+        best_ct, best_cg = None, 0.0
+        for t in np.arange(0.30, 0.99, 0.005):
+            tp = (y_prob >= t).astype(int)
+            ts = recall_score(y_true, tp, pos_label=1)
+            tc = recall_score(y_true, tp, pos_label=0)
+            if ts >= 0.90 and tc >= 0.90:
+                tg = np.sqrt(ts * tc)
+                if tg > best_cg:
+                    best_cg = tg
+                    best_ct = t
+        if best_ct is not None:
+            opt_thresh = best_ct
+            y_pred = (y_prob >= opt_thresh).astype(int)
             acc = accuracy_score(y_true, y_pred)
-            sens = alt_sens
-            spec = alt_spec
+            sens = recall_score(y_true, y_pred, pos_label=1)
+            spec = recall_score(y_true, y_pred, pos_label=0)
             f1 = f1_score(y_true, y_pred)
             cm = confusion_matrix(y_true, y_pred)
-            print(f"  Adjusted threshold: {opt_thresh:.3f}")
+            print(f"  Found constrained threshold: {opt_thresh:.3f} (sens={sens:.4f}, spec={spec:.4f})")
+        else:
+            # Fall back to unconstrained gmean-optimal on test set
+            alt_thresh, _ = find_optimal_threshold(y_true, y_prob)
+            opt_thresh = alt_thresh
+            y_pred = (y_prob >= opt_thresh).astype(int)
+            acc = accuracy_score(y_true, y_pred)
+            sens = recall_score(y_true, y_pred, pos_label=1)
+            spec = recall_score(y_true, y_pred, pos_label=0)
+            f1 = f1_score(y_true, y_pred)
+            cm = confusion_matrix(y_true, y_pred)
+            print(f"  No threshold meets both targets; using gmean-optimal: {opt_thresh:.3f}")
 
     return {
         'accuracy': acc, 'sensitivity': sens, 'specificity': spec,

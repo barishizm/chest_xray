@@ -78,9 +78,15 @@ def generate_comparison_report(classical_results, dl_results):
     # Speed comparison
     print(f"\n{'Speed':<15} | ", end="")
     for name, res in methods.items():
-        n = len(res.get('y_test', res.get('y_true', [])))
-        t = res['inference_time']
-        print(f"  {t:.3f}s total, {t / n * 1000:.2f}ms/image          | ", end="")
+        t = res.get('inference_time')
+        if t is not None:
+            n = len(res.get('y_test', res.get('y_true', [])))
+            if n > 0:
+                print(f"  {t:.3f}s total, {t / n * 1000:.2f}ms/image          | ", end="")
+            else:
+                print(f"  {t:.3f}s total                       | ", end="")
+        else:
+            print(f"  N/A                                  | ", end="")
     print()
 
     overall = "ALL METRICS PASS" if all_pass else "SOME METRICS BELOW THRESHOLD"
@@ -117,7 +123,7 @@ def generate_comparison_report(classical_results, dl_results):
 
 
 def main():
-        print("=" * 62)
+    print("=" * 62)
     print("  Chest X-Ray Pneumonia Detection -- Automated Pipeline")
     print("  Classical ML + Deep Learning with Transfer Learning")
     print("=" * 62 + "\n")
