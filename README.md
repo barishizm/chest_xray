@@ -299,6 +299,20 @@ If your system uses `python` instead of `python3`, use that command instead.
 
 - `comparison_chart.png`: side-by-side comparison of the best classical model and `ResNet18`
 
+## Example Visual Outputs
+
+### Classical Preprocessing
+
+![Classical preprocessing pipeline](results/classical/preprocessing_pipeline.png)
+
+### Deep Learning Training History
+
+![Deep learning training history](results/deep_learning/training_history.png)
+
+### Grad-CAM Heatmaps
+
+![Grad-CAM visualizations](results/deep_learning/gradcam_heatmaps.png)
+
 ## Notes And Limitations
 
 - paths are hardcoded and should be parameterized for portability
