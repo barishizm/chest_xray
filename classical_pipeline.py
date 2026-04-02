@@ -351,7 +351,7 @@ def plot_results(results):
     ax.legend(loc='lower right', fontsize=8)
     ax.grid(True, alpha=0.3)
 
-    # Confusion matrices
+    # Confusion matrices for each method is seperate subplots.
     for idx, (name, res) in enumerate(results.items()):
         ax = axes[idx + 1]
         sns.heatmap(res['confusion_matrix'], annot=True, fmt='d', cmap='Blues', ax=ax,
@@ -367,7 +367,7 @@ def plot_results(results):
     plt.savefig(os.path.join(OUTPUT_DIR, 'classical_results.png'), dpi=150, bbox_inches='tight')
     plt.close()
 
-    # Metrics bar chart
+    # Bar chart comparing metrics accross methods.
     fig, ax = plt.subplots(figsize=(12, 6))
     metrics_names = ['Accuracy', 'Sensitivity', 'Specificity', 'F1-Score', 'AUC-ROC']
     x = np.arange(len(metrics_names))
@@ -429,3 +429,5 @@ def save_preprocessing_example():
 
 if __name__ == '__main__':
     train_and_evaluate()
+
+# classical pipeline is complete and the code is ready to run. It will load the chest x-ray dataset, preprocess the images, extract handcrafted and pixel features, train SVM, RandomForest and an ensemble classifier, optimize thresholds, evaluate performance, and generate visualizations of results and preprocessing steps.

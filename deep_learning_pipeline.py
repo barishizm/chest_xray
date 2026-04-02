@@ -496,12 +496,14 @@ def train_and_evaluate():
     print(f"  Inference:   {results['inference_time']:.2f}s ({len(results['y_true'])} images)")
     print(f"  Per-image:   {results['inference_time'] / len(results['y_true']) * 1000:.2f}ms")
 
+
+    #creating confusion matrix for resnet18, this will be used in the visualizations and also printed in the console.
     cm = results['confusion_matrix']
     print(f"\n  Confusion Matrix:")
     print(f"    TN={cm[0][0]:4d}  FP={cm[0][1]:4d}")
     print(f"    FN={cm[1][0]:4d}  TP={cm[1][1]:4d}")
 
-    # Visualizations
+    # Visualizations of training history, evaluation results and gradcam heatmaps.
     print("\n[5/5] Generating visualizations...")
     plot_training_history(history)
     plot_evaluation_results(results)
