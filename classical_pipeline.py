@@ -1,12 +1,3 @@
-"""
-Classical Machine Learning Pipeline for Chest X-Ray Pneumonia Detection
-========================================================================
-Preprocessing (CLAHE + denoising)
-Feature Extraction: GLCM texture, Histogram, HOG, LBP, Spatial, Pixel-PCA
-Classification: SVM, RandomForest, and Ensemble (SVM+RF+GradientBoosting)
-Threshold optimization via cross-validation for balanced sensitivity/specificity
-"""
-
 import os
 import time
 import numpy as np
@@ -429,5 +420,3 @@ def save_preprocessing_example():
 
 if __name__ == '__main__':
     train_and_evaluate()
-
-# classical pipeline is complete and the code is ready to run. It will load the chest x-ray dataset, preprocess the images, extract handcrafted and pixel features, train SVM, RandomForest and an ensemble classifier, optimize thresholds, evaluate performance, and generate visualizations of results and preprocessing steps.

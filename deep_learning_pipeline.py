@@ -1,9 +1,3 @@
-"""
-Deep Learning Pipeline for Chest X-Ray Pneumonia Detection
-============================================================
-Transfer Learning with ResNet18 + Grad-CAM Visualization
-"""
-
 import os
 import time
 import numpy as np
