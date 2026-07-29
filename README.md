@@ -50,7 +50,7 @@ chest_xray/
 
 Some additional artifacts may be present in `results/` from earlier experiments.
 
-## Expected Dataset Structure
+## Expected Dataset Structure:
 
 The scripts expect the common Kaggle-style chest X-ray folder layout:
 
