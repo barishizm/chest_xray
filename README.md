@@ -10,7 +10,7 @@ The target classes are:
 - `NORMAL`
 - `PNEUMONIA`
 
-The repository also includes a combined runner that executes both pipelines and generates a final comparison chart.
+The repository also includes a combined runner that executes both pipelines and generates a final comparison chart..
 
 This is an educational and experimental project, not a clinical product. It must not be used for medical decision-making.
 
